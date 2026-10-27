@@ -1,0 +1,6 @@
+NAME        CardputerCreoView
+STARTUP     DLL
+EXEC_FILE   D:\PTC\CardputerCreoView\bin\cardputer_creo_view.dll
+TEXT_DIR    D:\PTC\CardputerCreoView\text
+ALLOW_STOP  TRUE
+END
