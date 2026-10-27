@@ -229,3 +229,26 @@ TDdesigntool 虽用 `/MD` 但避开了 MSVCP140 中的特性（mutex/ofstream/th
 - mify 长期安全边界记忆：`0a7bf95c-31ce-46a7-9ecf-4f165b9b96bc`。
 - mify 开发记录与备份索引：`b31bb57e-4fef-4a55-94ea-75b7ff0bcc8b`。
 - 本地记忆：`cardputer-creo-view-project.md`、`feedback-creo-no-launch-without-reapproval.md`、`cardputer-creo-view-record.md`，均已登记到 `MEMORY.md`。
+
+## 11. 路线切换：BLE HID 模拟 SpaceMouse（2026-10-27 深夜）
+
+官方 NavLib 对接路线（自研插件 → nlserver）因 3DxCreo 插件不加载而放弃；
+改为路线 1：Cardputer 固件直接模拟 3Dconnexion SpaceMouse Wireless BT。
+
+**关键根因与修复**：
+1. PnP ID 厂商源必须 0x02（蓝牙 SIG）。此前误用 0x01（USB-IF），
+   Windows 实例 ID 变为 VID&01256F，与 3dxhid.inf 的
+   `HID\{00001812-...}_Dev_VID&02256f_PID&c63a` 不匹配，官方驱动不接管。
+2. HOGP 报告值不含 Report ID 前缀（Report ID 由 0x2908 描述符声明）。
+   运动报告 12 字节（6 轴 int16 LE），按钮报告 2 字节。
+3. NimBLEHIDDevice 配对需 Just Works 安全配置（bonding + NoInputOutput IO cap），
+   否则 Windows "正在连接→消失"。
+4. BLE HID 输入报告无需等待订阅即可推送；nimble 的 setValue+notify() 标准写法。
+5. 广播需 Appearance 0x03C0 + HID 服务 UUID 0x1812 + 快速间隔（~20ms）。
+
+**实机验证**：Windows 设备管理器显示 "3Dconnexion SpaceMouse Wireless
+Bluetooth Edition"（官方 3dxhid 驱动接管），3DxService 状态 PAIREDANDSEENDATA，
+Creo 视图随设备动作响应。旧自研 Pro/TOOLKIT 插件（/MT 修复版）保留可用。
+
+**资源**：SpaceMouse HID 描述符来自开源社区逆向（github.com/AndunHH/spacemouse,
+CC BY-NC-SA，270 字节 Report Map 见 firmware/src/SpaceMouseHID.h）。

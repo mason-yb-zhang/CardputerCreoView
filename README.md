@@ -4,7 +4,9 @@ M5Stack Cardputer Adv 通过 BLE 将 BMI270 和键盘输入发送到 Windows，�
 
 ## 当前状态
 
-**固件、BLE 和 Windows 桥接已实测通过；Creo 插件加载闪退已定位根因并修复（/MT 静态运行时），修复版待实机加载烟测。** 端到端未验收，不要据此认定插件可用。
+**路线 1（推荐，已实机验证）：Cardputer 固件直接模拟 3Dconnexion SpaceMouse Wireless BT（BLE HID），Windows 官方 3dxhid 驱动接管，Creo 通过官方 3DxCreo 插件响应视图。** 无需自研插件与桥接。
+
+备选旧路线：BLE 遥测 + Windows 桥接 + 自研 Pro/TOOLKIT 插件（/MT 修复已解决加载闪退，保留可用）。
 
 - 约 55 Hz 的真实 BLE 遥测和 WPF 校准已通过。
 - 桥接 24 项、固件 12 项、插件 26 项离线测试通过。
