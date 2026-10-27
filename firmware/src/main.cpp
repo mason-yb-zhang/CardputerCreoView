@@ -6,6 +6,7 @@
 #include <atomic>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 
 #include "SpaceMouseHID.h"
 
@@ -239,6 +240,10 @@ bool deadlineReached(uint32_t now, uint32_t deadline) {
     return static_cast<int32_t>(now - deadline) >= 0;
 }
 
+M5Canvas g_canvas(&M5.Display);
+bool g_canvasReady = false;
+char g_lastStatus[224] = {};
+
 void drawStatus() {
     const bool connected = g_connected.load();
     const bool notifying = g_notifyEnabled.load();
@@ -254,8 +259,25 @@ void drawStatus() {
         bleStatus = "BLE: ADV ERROR";
     }
 
-    auto& display = M5.Display;
-    display.startWrite();
+    // Only redraw when visible content actually changes, and render offscreen
+    // so the panel never flickers from a clear+rewrite cycle.
+    char status[224];
+    snprintf(status, sizeof(status), "%s|%d|%d|%s|%d|%lu|%lu|%d|%d",
+             bleStatus, g_button1 ? 1 : 0, g_button2 ? 1 : 0, g_imuStatus,
+             g_imuFault ? 1 : 0, (unsigned long)g_sentMotion,
+             (unsigned long)g_notifyFail, (int)g_lastTx, (int)g_lastRx);
+    if (strncmp(status, g_lastStatus, sizeof(status)) == 0) {
+        return;
+    }
+    strncpy(g_lastStatus, status, sizeof(g_lastStatus) - 1);
+    g_lastStatus[sizeof(g_lastStatus) - 1] = '\0';
+
+    if (!g_canvasReady) {
+        g_canvas.setColorDepth(16);
+        g_canvas.createSprite(M5.Display.width(), M5.Display.height());
+        g_canvasReady = true;
+    }
+    auto& display = g_canvas;
     display.fillScreen(TFT_BLACK);
     display.setTextColor(TFT_WHITE, TFT_BLACK);
     display.setTextSize(2);
@@ -280,7 +302,7 @@ void drawStatus() {
         display.setTextColor(TFT_RED, TFT_BLACK);
         display.drawString("MOTION STOPPED", 4, 126);
     }
-    display.endWrite();
+    display.pushSprite(0, 0);
 }
 
 }

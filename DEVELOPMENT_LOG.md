@@ -252,3 +252,17 @@ Creo 视图随设备动作响应。旧自研 Pro/TOOLKIT 插件（/MT 修复版�
 
 **资源**：SpaceMouse HID 描述符来自开源社区逆向（github.com/AndunHH/spacemouse,
 CC BY-NC-SA，270 字节 Report Map 见 firmware/src/SpaceMouseHID.h）。
+
+## 12. 旋转专用模式与设备配置坑（2026-10-28 凌晨）
+
+- **旋转专用**：%APPDATA%\3Dconnexion\3DxWare\Cfg\ProE.xml 中 AxisBank 设置
+  X/Y/Z Enabled=false、Rx/Ry/Rz Enabled=true（该 XML 为带缩进格式，需按 <Axis> 块正则修改）。
+- **设备专属配置段必须带 AxisBank**：给 ID_ProductID_C63A 加 ButtonBank 时若不带
+  AxisBank，驱动对该设备关闭全部轴（不回退 ID_Standard_3D_Mouse），症状为固件
+  SENT 正常但 Windows hidapi 0 报告、Creo 无响应。已修复（同段补齐旋转轴配置）。
+- **按键映射**：空格→Driver_AppFit（视图适配）；T→`AppCommand_ProCmd ~ Command \`3DxProE\`;`
+  打开 3DxProE 设置对话框，其中 Rotation Center 可选 Manual/Auto/Use Selected Item。
+  驱动动作表没有一键切换旋转中心的动作。
+- **屏幕防闪**：drawStatus 改为 M5Canvas 离屏渲染 + 内容哈希不变不推帧，
+  替代原先每 200ms 全屏清写；屏幕增加 SENT/FAIL/TX/RX 排障计数器。
+- 备份：ProE.xml.before-rotation-only / .before-buttons / .before-axisbank-fix。
