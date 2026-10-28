@@ -266,3 +266,9 @@ CC BY-NC-SA，270 字节 Report Map 见 firmware/src/SpaceMouseHID.h）。
 - **屏幕防闪**：drawStatus 改为 M5Canvas 离屏渲染 + 内容哈希不变不推帧，
   替代原先每 200ms 全屏清写；屏幕增加 SENT/FAIL/TX/RX 排障计数器。
 - 备份：ProE.xml.before-rotation-only / .before-buttons / .before-axisbank-fix。
+
+## 13. 恢复 SOP（实测确认）
+
+设备无响应但固件发送正常时，优先在 Windows 蓝牙设置删除并重新配对设备——
+这是 GATT 订阅丢失（CCCD 未重建）的快速复位法，不需要重启 Creo 或驱动。
+多次烧录/重启后容易出现该状态。
